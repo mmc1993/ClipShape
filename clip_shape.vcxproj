@@ -76,6 +76,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -115,6 +116,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\clip\clip_shape.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\window\app_window.cpp" />
+    <ClCompile Include="src\window\window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\base.h" />
+    <ClInclude Include="src\clip\clip_shape.h" />
+    <ClInclude Include="src\math\polygon.h" />
+    <ClInclude Include="src\math\vec4.h" />
+    <ClInclude Include="src\third\json.h" />
+    <ClInclude Include="src\third\sformat.h" />
+    <ClInclude Include="src\window\app_window.h" />
+    <ClInclude Include="src\window\window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

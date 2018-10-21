@@ -14,4 +14,44 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\window\app_window.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\window\window.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\clip\clip_shape.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\math\polygon.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\math\vec4.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\third\json.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\third\sformat.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\window\app_window.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\window\window.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\base.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\clip\clip_shape.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
