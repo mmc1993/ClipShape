@@ -15,6 +15,15 @@ public:
             && cd.Cross(a - c).z * cd.Cross(b - c).z <= 0;
     }
 
+    static bool OnLine(const Vec4 & a, const Vec4 & b, const Vec4 & point)
+    {
+        return point.x >= std::min(a.x, b.x)
+            && point.x <= std::max(a.x, b.x)
+            && point.y >= std::min(a.y, b.y)
+            && point.y <= std::max(a.y, b.y)
+            && (point - a).Cross(b - point).z == 0;
+    }
+
     //  Ïß¶Î½»µã
     static bool IsCross(const Vec4 & a, const Vec4 & b, const Vec4 & c, const Vec4 & d, float *crossA, float *crossB)
     {
@@ -43,6 +52,7 @@ public:
         {
             auto & a = points.at(i);
             auto & b = points.at((i + 1) % length);
+            if (OnLine(a, b, point)){return true; }
             if (a.y == b.y)
             {
                 if (a.y == point.y &&

@@ -41,20 +41,26 @@ std::vector<ClipShape> ClipShape::Clip(ClipLine clipLine) const
             FlipCross(crossResult);
 
             auto clipA = ClipA(crossResult);
-            auto ret1 = clipA.Clip(clipLine);
-            std::copy(
-                std::make_move_iterator(ret1.begin()),
-                std::make_move_iterator(ret1.end()),
-                std::back_inserter(result));
-            result.push_back(clipA);
+            if (!clipA.IsBeContains(clipLine))
+            {
+                auto ret1 = clipA.Clip(clipLine);
+                std::copy(
+                    std::make_move_iterator(ret1.begin()),
+                    std::make_move_iterator(ret1.end()),
+                    std::back_inserter(result));
+                if (ret1.empty()) { result.push_back(clipA); }
+            }
 
-            //auto clipB = ClipB(crossResult);
-            //auto ret2 = clipB.Clip(clipLine);
-            //std::copy(
-            //    std::make_move_iterator(ret2.begin()),
-            //    std::make_move_iterator(ret2.end()),
-            //    std::back_inserter(result));
-            //result.push_back(clipB);
+            auto clipB = ClipB(crossResult);
+            if (!clipB.IsBeContains(clipLine))
+            {
+                auto ret2 = clipB.Clip(clipLine);
+                std::copy(
+                    std::make_move_iterator(ret2.begin()),
+                    std::make_move_iterator(ret2.end()),
+                    std::back_inserter(result));
+                if (ret2.empty()) { result.push_back(clipB); }
+            }
         }
     }
     return result;
@@ -139,63 +145,64 @@ exit:
 
 ClipShape ClipShape::ClipA(const CrossResult & crossResult) const
 {
-    //  ÖØÐ´
     ClipShape result;
     auto & front = crossResult.front();
     auto & back = crossResult.back();
-    auto insert = _points.size();
 
-    for (auto i = 0; 
+    //  points => clipLine
+    if (front.mPoint != _points.front())
+    {
+        result.Push(_points.front());
+    }
+    for (auto i = 1;
         i != front.mLinkB && 
         i != _points.size(); ++i)
     {
         result.Push(_points.at(i));
     }
 
-    if (front.mPoint != _points.at(front.mLinkA))
+    //  clipLine
+    if (front.mPoint != result.GetPoints().back())
     {
-        result.Push(crossResult.front().mPoint);
+        result.Push(front.mPoint);
     }
-
     for (auto i = 1; i != crossResult.size(); ++i)
     {
         result.Push(crossResult.at(i).mPoint);
     }
 
-    if (back.mLinkB != 0 &&
-        back.mPoint != _points.at(back.mLinkB))
+    //  clipLine => points
+    if (back.mLinkB != 0)
     {
-        insert = back.mLinkB;
+        auto i = _points.at(back.mLinkB) == result.GetPoints().back()
+                    ? back.mLinkB + 1 
+                    : back.mLinkB;
+        for (; i != _points.size(); ++i)
+        { result.Push(_points.at(i)); }
     }
-
-    for (; insert != _points.size(); ++insert)
-    {
-        result.Push(_points.at(insert));
-    }
-
-    return result;
+    return std::move(result);
 }
 
 ClipShape ClipShape::ClipB(const CrossResult & crossResult) const
 {
-    //  ÖØÐ´
     ClipShape result;
     auto & front = crossResult.front();
     auto & back = crossResult.back();
 
-    result.Push(front.mPoint);
-
-    for (auto i = front.mLinkB; i != back.mLinkB; ++i)
+    for (auto 
+        i = front.mLinkB; 
+        i != back.mLinkB && 
+        i != _points.size(); ++i)
     {
         result.Push(_points.at(i));
     }
 
-    for (auto i = crossResult.size() - 1; i != 0; --i)
+    for (auto it = crossResult.rbegin(); it != crossResult.rend(); ++it)
     {
-        result.Push(crossResult.at(i).mPoint);
+        result.Push(it->mPoint);
     }
 
-    return result;
+    return std::move(result);
 }
 
 void ClipShape::FlipCross(CrossResult & result) const
@@ -218,14 +225,7 @@ bool ClipShape::Roll(ClipLine & clipLine) const
 
         if (it == clipLine.end()) { return false; }
 
-        auto distance = std::distance(clipLine.begin(), it);
-
-        std::copy(clipLine.begin(), 
-            std::next(clipLine.begin(), distance), 
-            std::back_inserter(clipLine));
-
-        clipLine.erase(clipLine.begin(), 
-            std::next(clipLine.begin(), distance));
+        std::rotate(clipLine.begin(), it, clipLine.end());
     }
     return true;
 }
