@@ -82,7 +82,7 @@ public:
             }
         }
 
-        if (set.empty())
+        if (set.size() < 2)
         {
             return !OnLine(a.Lerp(b, 0.5f), points);
         }
