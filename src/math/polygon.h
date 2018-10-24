@@ -42,7 +42,60 @@ public:
         return false;
     }
 
-    static bool IsContains(const Vec4 & point, const Points & points)
+    //  判断线段在多边形内, 排除与多边形边平行的情况.
+    static bool IsContains(const Vec4 & a, const Vec4 & b, const Points & points)
+    {
+        if (!Polygon::IsContains(a, points) || 
+            !Polygon::IsContains(b, points))
+        {
+            return false;
+        }
+
+        std::vector<Vec4> set;
+        auto crossA = 0.0f;
+        auto crossB = 0.0f;
+        auto size = points.size();
+        for (auto i = 0; i != size; ++i)
+        {
+            auto & c = points.at(INDEX<0>(i, size));
+            auto & d = points.at(INDEX<1>(i, size));
+            if (Polygon::IsCross(a, b, c, d, &crossA, &crossB))
+            {
+                if (crossA != 0.0f && crossA != 1.0f && 
+                    crossB != 0.0f && crossB != 1.0f)
+                {
+                    return false;
+                }
+                else
+                {
+                    set.push_back(a.Lerp(b, crossA));
+                }
+            }
+        }
+
+        auto fn = [](auto & a, auto & b)
+        {
+            return a.x < b.x 
+                || a.x == b.x && a.y < b.y;
+        };
+        std::sort(set.begin(), set.end(), fn);
+
+        for (auto i = 0; i != set.size(); ++i)
+        {
+            auto isOn = false;
+            auto & a = set.at(INDEX<0>(i, set.size()));
+            auto & b = set.at(INDEX<1>(i, set.size()));
+            if (a == b) { continue; }
+
+            if (!IsContains(a.Lerp(b, 0.5f), points, &isOn) || isOn)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static bool IsContains(const Vec4 & point, const Points & points, bool * isOn = nullptr)
     {
         assert(points.size() >= 3);
         auto count = (size_t)0;
@@ -50,19 +103,17 @@ public:
         auto rayEnd = Vec4(point.x + 5000.0f, point.y);
         for (auto i = 0; i != length; ++i)
         {
-            auto & a = points.at(i);
-            auto & b = points.at((i + 1) % length);
-            if (OnLine(a, b, point)){return true; }
-            if (a.y == b.y)
+            auto & a = points.at(INDEX<0>(i, length));
+            auto & b = points.at(INDEX<1>(i, length));
+            if (OnLine(a, b, point))
             {
-                if (a.y == point.y &&
-                    point.x > std::min(a.x, b.x) &&
-                    point.x < std::max(a.x, b.x))
+                if (isOn != nullptr)
                 {
-                    return true;
+                    *isOn = true;
                 }
+                return true;
             }
-            else
+            if (a.y != b.y)
             {
                 if (IsCross(point, rayEnd, a, b))
                 {
@@ -70,7 +121,6 @@ public:
                 }
             }
         }
-
-        return count % 2 != 0;
+        return (count % 2 != 0);
     }
 };

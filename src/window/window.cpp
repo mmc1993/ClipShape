@@ -139,11 +139,11 @@ void Window::DCLine(const Vec4 & start, const Vec4 & end, const COLORREF & color
 //  ªÊ÷∆∂‡±ﬂ–Œ
 void Window::DCPolygon(const std::vector<Vec4> & polygon, const COLORREF & color)
 {
-    auto count = polygon.size();
-    for (auto i = 0; i != count; ++i)
+    auto size = polygon.size();
+    for (auto i = 0; i != size; ++i)
     {
-        auto & a = polygon.at(i);
-        auto & b = polygon.at((i + 1) % count);
+        auto & a = polygon.at(INDEX<0>(i, size));
+        auto & b = polygon.at(INDEX<1>(i, size));
         DCLine(a, b, color);
     }
 }

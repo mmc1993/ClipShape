@@ -87,13 +87,16 @@ ClipShape::CrossResult ClipShape::CheckCross(const Vec4 & a, const Vec4 & b) con
     auto size = _points.size();
     for (auto i = 0; i != size; ++i)
     {
-        auto & p1 = _points.at(i);
-        auto & p2 = _points.at((i + 1) % size);
+        auto & p1 = _points.at(INDEX<0>(i, size));
+        auto & p2 = _points.at(INDEX<1>(i, size));
         if (Polygon::IsCross(a, b, p1, p2, &crossA, &crossB))
         {
             if (crossB != 0.0f && crossB != 1.0f)
             {
-                result.emplace_back(a.Lerp(b, crossA), i, (i + 1) % size);
+                result.emplace_back(
+                    a.Lerp(b, crossA), 
+                    INDEX<0>(i, size), 
+                    INDEX<1>(i, size));
             }
         }
     }
@@ -116,8 +119,8 @@ ClipShape::CrossResult ClipShape::CheckCross(const ClipLine & clipLine) const
     auto size = clipLine.size();
     for (auto i = 0; i != size; ++i)
     {
-        auto & a = clipLine.at(i);
-        auto & b = clipLine.at((i + 1) % size);
+        auto & a = clipLine.at(INDEX<0>(i, size));
+        auto & b = clipLine.at(INDEX<1>(i, size));
         auto points = std::move(CheckCross(a, b));
         if (!points.empty())
         {
@@ -138,7 +141,6 @@ ClipShape::CrossResult ClipShape::CheckCross(const ClipLine & clipLine) const
             { result.emplace_back(b); }
         }
     }
-    
 exit:
     return result;
 }
