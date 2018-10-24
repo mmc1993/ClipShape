@@ -15,13 +15,25 @@ public:
             && cd.Cross(a - c).z * cd.Cross(b - c).z <= 0;
     }
 
-    static bool OnLine(const Vec4 & a, const Vec4 & b, const Vec4 & point)
+    static bool OnLine(const Vec4 & p, const Vec4 & a, const Vec4 & b)
     {
-        return point.x >= std::min(a.x, b.x)
-            && point.x <= std::max(a.x, b.x)
-            && point.y >= std::min(a.y, b.y)
-            && point.y <= std::max(a.y, b.y)
-            && (point - a).Cross(b - point).z == 0;
+        return p.x >= std::min(a.x, b.x)
+            && p.x <= std::max(a.x, b.x)
+            && p.y >= std::min(a.y, b.y)
+            && p.y <= std::max(a.y, b.y)
+            && (p - a).Cross(b - p).z == 0;
+    }
+
+    static bool OnLine(const Vec4 & p, const Points & points)
+    {
+        auto size = points.size();
+        for (auto i = 0; i != size; ++i)
+        {
+            auto & a = points.at(INDEX<0>(i, size));
+            auto & b = points.at(INDEX<1>(i, size));
+            if (OnLine(p, a, b)) { return true; }
+        }
+        return false;
     }
 
     //  Ïß¶Î½»µã
@@ -47,9 +59,7 @@ public:
     {
         if (!Polygon::IsContains(a, points) || 
             !Polygon::IsContains(b, points))
-        {
-            return false;
-        }
+        { return false; }
 
         std::vector<Vec4> set;
         auto crossA = 0.0f;
@@ -62,20 +72,23 @@ public:
             if (Polygon::IsCross(a, b, c, d, &crossA, &crossB))
             {
                 if (crossA != 0.0f && crossA != 1.0f && 
-                    crossB != 0.0f && crossB != 1.0f)
-                {
-                    return false;
-                }
-                else
-                {
-                    set.push_back(a.Lerp(b, crossA));
+                    crossB != 0.0f && crossB != 1.0f) 
+                { return false; }
+                else 
+                { 
+                    set.push_back(a.Lerp(b, crossA)); 
                 }
             }
         }
 
+        if (set.empty())
+        {
+            return OnLine(a.Lerp(b, 0.5f), points);
+        }
+
         auto fn = [](auto & a, auto & b)
         {
-            return a.x < b.x 
+            return a.x < b.x
                 || a.x == b.x && a.y < b.y;
         };
         std::sort(set.begin(), set.end(), fn);
@@ -85,13 +98,12 @@ public:
             auto isOn = false;
             auto & a = set.at(INDEX<0>(i, set.size()));
             auto & b = set.at(INDEX<1>(i, set.size()));
-            if (a == b) { continue; }
-
-            if (!IsContains(a.Lerp(b, 0.5f), points, &isOn) || isOn)
+            if (a != b && (!IsContains(a.Lerp(b, 0.5f), points, &isOn) || isOn))
             {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -105,7 +117,7 @@ public:
         {
             auto & a = points.at(INDEX<0>(i, length));
             auto & b = points.at(INDEX<1>(i, length));
-            if (OnLine(a, b, point))
+            if (OnLine(point, a, b))
             {
                 if (isOn != nullptr)
                 {
