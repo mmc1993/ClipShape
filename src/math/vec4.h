@@ -4,24 +4,24 @@
 
 class Vec4 {
 public:
-	float x, y, z, w;
+	double x, y, z, w;
 
-	Vec4(float _x, float _y, float _z, float _w)
+	Vec4(double _x, double _y, double _z, double _w)
 	{
         x = _x; y = _y;
         z = _z; w = _w;
     }
 
-    Vec4(float _x, float _y, float _z)
+    Vec4(double _x, double _y, double _z)
     {
         x = _x; y = _y;
-        z = _z; w = .0f;
+        z = _z; w = .0;
     }
 
-    Vec4(float _x, float _y)
+    Vec4(double _x, double _y)
     {
         x = _x; y = _y;
-        z = 0; w = .0f;
+        z = 0; w = .0;
     }
 
     Vec4(const Vec4 & v)
@@ -73,7 +73,7 @@ public:
 		return { x - v.x, y - v.y, z - v.z };
 	}
 
-	Vec4 operator *(const float v) const
+	Vec4 operator *(const double v) const
 	{
 		return { x * v, y * v, z * v };
 	}
@@ -83,12 +83,12 @@ public:
         return { x * v.x, y * v.y, z * v.z };
     }
 
-	Vec4 operator /(const float v) const
+	Vec4 operator /(const double v) const
 	{
 		return { x / v, y / v, z / v };
 	}
 
-	float Dot(const Vec4 & v) const
+	double Dot(const Vec4 & v) const
 	{
 		return x * v.x + y * v.y + z * v.z;
 	}
@@ -100,12 +100,12 @@ public:
 					x * v.y - y * v.x	};
 	}
 
-	float LengthSqrt() const
+	double LengthSqrt() const
 	{
 		return Dot(*this);
 	}
 
-	float Length() const
+	double Length() const
 	{
 		return std::sqrt(LengthSqrt());
 	}
@@ -129,12 +129,12 @@ public:
 		return ret;
 	}
 
-    Vec4 Lerp(const Vec4 & v, float f) const
+    Vec4 Lerp(const Vec4 & v, double f) const
     {
         return *this + (v - *this) * f;
     }
 
-    float Unlerp(const Vec4 & v, const Vec4 & m) const
+    double Unlerp(const Vec4 & v, const Vec4 & m) const
     {
         return (m - *this).Length() / (v - *this).Length();
     }

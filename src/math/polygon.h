@@ -17,11 +17,12 @@ public:
 
     static bool OnLine(const Vec4 & p, const Vec4 & a, const Vec4 & b)
     {
+        auto dot = (p - a).Normal().Dot((b - p).Normal());
         return p.x >= std::min(a.x, b.x)
             && p.x <= std::max(a.x, b.x)
             && p.y >= std::min(a.y, b.y)
             && p.y <= std::max(a.y, b.y)
-            && (p - a).Cross(b - p).z == 0;
+            && Equal((p - a).Cross(b - p).z, 0.0);
     }
 
     static bool OnLine(const Vec4 & p, const Points & points)
@@ -37,19 +38,19 @@ public:
     }
 
     //  Ïß¶Î½»µã
-    static bool IsCross(const Vec4 & a, const Vec4 & b, const Vec4 & c, const Vec4 & d, float *crossA, float *crossB)
+    static bool IsCross(const Vec4 & a, const Vec4 & b, const Vec4 & c, const Vec4 & d, double *crossA, double *crossB)
     {
         assert(crossA != nullptr);
         assert(crossB != nullptr);
-        auto ab = b - a;
-        auto cd = d - c;
-        auto cross = ab.Cross(cd).z;
-        if (cross != 0)
+        auto cross = (b - a).Cross(d - c).z;
+        if (cross != 0.0)
         {
-            *crossA = (c - a).Cross(cd).z / cross;
-            *crossB = ab.Cross((d - a)).z / cross;
-            return *crossA >= 0.0f && *crossA <= 1.0f
-                && *crossB >= 0.0f && *crossB <= 1.0f;
+            *crossA = (d - c).Cross(a - c).z / cross;
+            *crossB = (b - a).Cross(a - c).z / cross;
+            return (Equal(*crossA, 0.0) || *crossA > 0.0)
+                && (Equal(*crossA, 1.0) || *crossA < 1.0)
+                && (Equal(*crossB, 0.0) || *crossB > 0.0)
+                && (Equal(*crossB, 1.0) || *crossB < 1.0);
         }
         return false;
     }
@@ -62,8 +63,8 @@ public:
         { return false; }
 
         std::vector<Vec4> set;
-        auto crossA = 0.0f;
-        auto crossB = 0.0f;
+        auto crossA = 0.0;
+        auto crossB = 0.0;
         auto size = points.size();
         for (auto i = 0; i != size; ++i)
         {
@@ -71,8 +72,8 @@ public:
             auto & d = points.at(INDEX<1>(i, size));
             if (Polygon::IsCross(a, b, c, d, &crossA, &crossB))
             {
-                if (crossA != 0.0f && crossA != 1.0f && 
-                    crossB != 0.0f && crossB != 1.0f) 
+                if (!Equal(crossA, 0.0) && !Equal(crossA, 1.0) &&
+                    !Equal(crossB, 0.0) && !Equal(crossB, 1.0))
                 { return false; }
                 else 
                 { 
@@ -83,7 +84,7 @@ public:
 
         if (set.empty())
         {
-            return OnLine(a.Lerp(b, 0.5f), points);
+            return !OnLine(a.Lerp(b, 0.5f), points);
         }
 
         auto fn = [](auto & a, auto & b)

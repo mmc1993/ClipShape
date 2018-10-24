@@ -34,3 +34,8 @@ inline size_t INDEX<0>(size_t i, size_t size)
 {
     return i;
 }
+
+inline bool Equal(double a, double b)
+{
+    return std::abs(a - b) <= FLT_EPSILON;
+}

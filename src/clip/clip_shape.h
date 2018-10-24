@@ -47,6 +47,7 @@ private:
 
     CrossResult CheckCross(const Vec4 & a, const Vec4 & b) const;
     CrossResult CheckCross(const ClipLine & clipLine) const;
+    bool CheckCross(const CrossResult & crossResult) const;
 
     ClipShape ClipA(const CrossResult & crossResult) const;
     ClipShape ClipB(const CrossResult & crossResult) const;

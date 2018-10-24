@@ -82,8 +82,8 @@ bool ClipShape::Max(const CrossPoint & cp1, const CrossPoint & cp2) const
 ClipShape::CrossResult ClipShape::CheckCross(const Vec4 & a, const Vec4 & b) const
 {
     CrossResult result;
-    auto crossA = 0.0f;
-    auto crossB = 0.0f;
+    auto crossA = 0.0;
+    auto crossB = 0.0;
     auto size = _points.size();
     for (auto i = 0; i != size; ++i)
     {
@@ -91,13 +91,7 @@ ClipShape::CrossResult ClipShape::CheckCross(const Vec4 & a, const Vec4 & b) con
         auto & p2 = _points.at(INDEX<1>(i, size));
         if (Polygon::IsCross(a, b, p1, p2, &crossA, &crossB))
         {
-            if (crossB != 0.0f && crossB != 1.0f)
-            {
-                result.emplace_back(
-                    a.Lerp(b, crossA), 
-                    INDEX<0>(i, size), 
-                    INDEX<1>(i, size));
-            }
+            result.emplace_back(p1.Lerp(p2, crossB), INDEX<0>(i, size), INDEX<1>(i, size));
         }
     }
 
@@ -128,7 +122,14 @@ ClipShape::CrossResult ClipShape::CheckCross(const ClipLine & clipLine) const
             {
                 result.push_back(point);
                 if (result.size() > 1)
-                { goto exit; }
+                { 
+                    if (CheckCross(result))
+                    {
+                        goto exit;
+                    }
+                    result.erase(result.begin(), 
+                        std::prev(result.end()));
+                }
             }
             if (result.size() == 1 && result.back().mPoint != b)
             { result.emplace_back(b); }
@@ -141,8 +142,22 @@ ClipShape::CrossResult ClipShape::CheckCross(const ClipLine & clipLine) const
             { result.emplace_back(b); }
         }
     }
+    result.clear();
+    //assert(false);
 exit:
     return result;
+}
+
+bool ClipShape::CheckCross(const CrossResult & crossResult) const
+{
+    for (auto i = 0; i != crossResult.size() - 1; ++i)
+    {
+        auto & a = crossResult.at(i    );
+        auto & b = crossResult.at(i + 1);
+        if (!Polygon::IsContains(a.mPoint, b.mPoint, _points))
+        { return false; }
+    }
+    return true;
 }
 
 ClipShape ClipShape::ClipA(const CrossResult & crossResult) const
