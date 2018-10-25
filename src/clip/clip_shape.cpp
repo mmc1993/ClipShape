@@ -1,6 +1,20 @@
 #include "clip_shape.h"
 #include "../math/polygon.h"
 
+ClipShape::ClipShape()
+{ }
+
+ClipShape::ClipShape(ClipShape && other)
+{
+    *this = std::move(other);
+}
+
+ClipShape & ClipShape::operator=(ClipShape && other)
+{
+    _points = std::move(other._points);
+    return *this;
+}
+
 void ClipShape::Clear()
 {
     _points.clear();
@@ -35,7 +49,7 @@ std::vector<ClipShape> ClipShape::Clip(ClipLine clipLine) const
     std::vector<ClipShape> result;
     if (Roll(clipLine))
     {
-        auto crossResult = std::move(CheckCross(clipLine));
+        auto crossResult = CheckCross(clipLine);
         if (!crossResult.empty())
         {
             FlipCross(crossResult);
@@ -63,7 +77,7 @@ std::vector<ClipShape> ClipShape::Clip(ClipLine clipLine) const
             }
         }
     }
-    return result;
+    return std::move(result);
 }
 
 bool ClipShape::Max(const CrossPoint & cp1, const CrossPoint & cp2) const
@@ -91,7 +105,10 @@ ClipShape::CrossResult ClipShape::CheckCross(const Vec4 & a, const Vec4 & b) con
         auto & p2 = _points.at(INDEX<1>(i, size));
         if (Polygon::IsCross(a, b, p1, p2, &crossA, &crossB))
         {
-            result.emplace_back(p1.Lerp(p2, crossB), INDEX<0>(i, size), INDEX<1>(i, size));
+            result.emplace_back(
+                p1.Lerp(p2, crossB), 
+                INDEX<0>(i, size), 
+                INDEX<1>(i, size));
         }
     }
 
@@ -115,7 +132,7 @@ ClipShape::CrossResult ClipShape::CheckCross(const ClipLine & clipLine) const
     {
         auto & a = clipLine.at(INDEX<0>(i, size));
         auto & b = clipLine.at(INDEX<1>(i, size));
-        auto points = std::move(CheckCross(a, b));
+        auto points = CheckCross(a, b);
         if (!points.empty())
         {
             for (auto & point : points)
@@ -123,12 +140,8 @@ ClipShape::CrossResult ClipShape::CheckCross(const ClipLine & clipLine) const
                 result.push_back(point);
                 if (result.size() > 1)
                 { 
-                    if (CheckCross(result))
-                    {
-                        goto exit;
-                    }
-                    result.erase(result.begin(), 
-                        std::prev(result.end()));
+                    if (CheckCross(result)) { goto exit; }
+                    result.erase(result.begin(), std::prev(result.end()));
                 }
             }
             if (result.size() == 1 && result.back().mPoint != b)
@@ -143,9 +156,11 @@ ClipShape::CrossResult ClipShape::CheckCross(const ClipLine & clipLine) const
         }
     }
     result.clear();
-    //assert(false);
 exit:
-    return result;
+    if (!result.empty() && 
+        result.front().mPoint == result.back().mPoint)
+    {   result.clear(); }
+    return std::move(result);
 }
 
 bool ClipShape::CheckCross(const CrossResult & crossResult) const
@@ -178,8 +193,9 @@ ClipShape ClipShape::ClipA(const CrossResult & crossResult) const
         result.Push(_points.at(i));
     }
 
-    //  clipLine
-    if (front.mPoint != result.GetPoints().back())
+    //  append clipLine
+    if (result.GetPoints().empty() ||
+        result.GetPoints().back() != front.mPoint)
     {
         result.Push(front.mPoint);
     }

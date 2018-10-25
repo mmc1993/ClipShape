@@ -33,6 +33,12 @@ private:
     void InitData();
 
 	void Update();
+
+    void BegHit(float x, float y, float radius, size_t num);
+
+    void EndHit();
+
+    void RunHit();
     
 private:
     std::vector<DrawNode> _drawNodes;

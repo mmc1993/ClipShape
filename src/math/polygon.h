@@ -17,7 +17,6 @@ public:
 
     static bool OnLine(const Vec4 & p, const Vec4 & a, const Vec4 & b)
     {
-        auto dot = (p - a).Normal().Dot((b - p).Normal());
         return p.x >= std::min(a.x, b.x)
             && p.x <= std::max(a.x, b.x)
             && p.y >= std::min(a.y, b.y)
@@ -121,17 +120,12 @@ public:
             if (OnLine(point, a, b))
             {
                 if (isOn != nullptr)
-                {
-                    *isOn = true;
-                }
+                { *isOn = true; }
                 return true;
             }
-            if (a.y != b.y)
+            if (a.y != b.y && IsCross(point, rayEnd, a, b))
             {
-                if (IsCross(point, rayEnd, a, b))
-                {
-                    std::max(a.y, b.y) > point.y && ++count;
-                }
+                std::max(a.y, b.y) > point.y && ++count;
             }
         }
         return (count % 2 != 0);

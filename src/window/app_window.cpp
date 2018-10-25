@@ -31,54 +31,28 @@ void AppWindow::OnMessage(UINT uint, WPARAM wparam, LPARAM lparam)
             }
 		}
 		break;
+    case WM_LBUTTONDOWN:
+        {
+            BegHit(
+                (float)GET_X_LPARAM(lparam), 
+                (float)GET_Y_LPARAM(lparam), 50.0f, 32);
+        }
+        break;
     case WM_MOUSEMOVE:
         {
             if (wparam & MK_LBUTTON)
             {
-                auto radius = 50.0f;
-                _hit = {
-                    {
-                        -radius + GET_X_LPARAM(lparam),
-                        -radius + GET_Y_LPARAM(lparam)
-                    },
-                    {
-                        radius + GET_X_LPARAM(lparam),
-                        -radius + GET_Y_LPARAM(lparam)
-                    },
-                    {
-                        radius + GET_X_LPARAM(lparam),
-                        radius + GET_Y_LPARAM(lparam)
-                    },
-                    {
-                        -radius + GET_X_LPARAM(lparam),
-                        radius + GET_Y_LPARAM(lparam)
-                    }
-                };
+                BegHit(
+                    (float)GET_X_LPARAM(lparam),
+                    (float)GET_Y_LPARAM(lparam), 50.0f, 32);
+                RunHit();
             }
         }
         break;
     case WM_LBUTTONUP:
         {
-            for (auto it = _areas.begin(); it != _areas.end(); )
-            {
-                auto iter = it++;
-                if (iter->IsBeContains(_hit))
-                {
-                    _areas.erase(iter);
-                }
-                else
-                {
-                    auto list = iter->Clip(_hit);
-                    if (!list.empty())
-                    {
-                        _areas.insert(iter, 
-                            list.begin(), 
-                            list.end());
-                        _areas.erase(iter);
-                    }
-                }
-            }
-            _hit.clear();
+            RunHit();
+            EndHit();
         }
         break;
 	}
@@ -117,4 +91,43 @@ void AppWindow::Update()
     }
 
     DCPolygon(_hit, RGB(255, 0, 0));
+}
+
+void AppWindow::BegHit(float x, float y, float radius, size_t num)
+{
+    EndHit();
+    const auto step = (PI * 2) / num;
+    for (auto i = 0; i != num; ++i)
+    {
+        _hit.emplace_back(
+            radius * std::cos(i * step) + x,
+            radius * std::sin(i * step) + y);
+    }
+}
+
+void AppWindow::EndHit()
+{
+    _hit.clear();
+}
+
+void AppWindow::RunHit()
+{
+    for (auto it = _areas.begin(); it != _areas.end(); )
+    {
+        auto iter = it++;
+        if (iter->IsBeContains(_hit))
+        {
+            _areas.erase(iter);
+        }
+        else
+        {
+            if (auto list = iter->Clip(_hit); !list.empty())
+            {
+                _areas.insert(iter,
+                    list.begin(),
+                    list.end());
+                _areas.erase(iter);
+            }
+        }
+    }
 }

@@ -17,8 +17,7 @@ public:
             : mPoint(point)
             , mLinkA(linkA)
             , mLinkB(linkB)
-        {
-        }
+        { }
     };
 
     using Points = std::vector<Vec4>;
@@ -30,6 +29,16 @@ public:
     using ClipResult = std::pair<ClipShape, ClipShape>;
 
 public:
+    ClipShape();
+
+    ClipShape(ClipShape && other);
+
+    ClipShape & operator=(ClipShape && other);
+
+    ClipShape(const ClipShape & other) = default;
+
+    ClipShape & operator=(const ClipShape & other) = default;
+    
     void Clear();
 
     void Push(const Vec4 & point);
